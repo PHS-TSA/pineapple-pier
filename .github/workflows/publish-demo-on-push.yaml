@@ -38,13 +38,13 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - name: 🏁 Windows
-            os: windows-latest
-            platform: windows
-            export-preset: Windows
-            export-type: release
-            export-folder: build/windows
-            archive: Windows
+          # - name: 🏁 Windows
+          #   os: windows-latest
+          #   platform: windows
+          #   export-preset: Windows
+          #   export-type: release
+          #   export-folder: build/windows
+          #   archive: Windows
           - name: 🐧 Linux
             os: ubuntu-latest
             platform: linux
