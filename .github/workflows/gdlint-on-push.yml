@@ -43,7 +43,7 @@ jobs:
         uses: astral-sh/setup-uv@f94ec6bedd8674c4426838e6b50417d36b6ab231 # v5.3.1
         with:
           enable-cache: true
-          python-version: 3.10
+          python-version: "3.10"
           github-token: ${{ github.token }}
       - name: 📦 Install dependencies
         run: uv tool install 'gdtoolkit==4.*'
