@@ -3,7 +3,6 @@
 class_name XRToolsFunctionPickup
 extends Node3D
 
-
 ## XR Tools Function Pickup Script
 ##
 ## This script implements picking up of objects. Most pickable
@@ -13,13 +12,11 @@ extends Node3D
 ## [XRToolsMovementProvider] class support climbing. Most climbable objects are
 ## instances of the [XRToolsClimbable] class.
 
-
 ## Signal emitted when the pickup picks something up
 signal has_picked_up(what)
 
 ## Signal emitted when the pickup drops something
 signal has_dropped
-
 
 # Default pickup collision mask of 3:pickable and 19:handle
 const DEFAULT_GRAB_MASK := 0b0000_0000_0000_0100_0000_0000_0000_0100
@@ -30,75 +27,80 @@ const DEFAULT_RANGE_MASK := 0b0000_0000_0000_0000_0000_0000_0000_0100
 # Constant for worst-case grab distance
 const MAX_GRAB_DISTANCE2: float = 1000000.0
 
+
 # Class for storing copied collision data
-class CopiedCollision extends RefCounted:
-	var collision_shape : CollisionShape3D
-	var org_transform : Transform3D
+class CopiedCollision:
+	extends RefCounted
+	var collision_shape: CollisionShape3D
+	var org_transform: Transform3D
+
 
 ## Pickup enabled property
-@export var enabled : bool = true
+@export var enabled: bool = true
 
 ## Grip controller axis
-@export var pickup_axis_action : String = "grip"
+@export var pickup_axis_action: String = "grip"
 
 ## Action controller button
-@export var action_button_action : String = "trigger_click"
+@export var action_button_action: String = "trigger_click"
 
 ## Grab distance
-@export var grab_distance : float = 0.3: set = _set_grab_distance
+@export var grab_distance: float = 0.3:
+	set = _set_grab_distance
 
 ## Grab collision mask
-@export_flags_3d_physics \
-		var grab_collision_mask : int = DEFAULT_GRAB_MASK: set = _set_grab_collision_mask
+@export_flags_3d_physics var grab_collision_mask: int = DEFAULT_GRAB_MASK:
+	set = _set_grab_collision_mask
 
 ## If true, ranged-grabbing is enabled
-@export var ranged_enable : bool = true
+@export var ranged_enable: bool = true
 
 ## Ranged-grab distance
-@export var ranged_distance : float = 5.0: set = _set_ranged_distance
+@export var ranged_distance: float = 5.0:
+	set = _set_ranged_distance
 
 ## Ranged-grab angle
-@export_range(0.0, 45.0) var ranged_angle : float = 5.0: set = _set_ranged_angle
+@export_range(0.0, 45.0) var ranged_angle: float = 5.0:
+	set = _set_ranged_angle
 
 ## Ranged-grab collision mask
-@export_flags_3d_physics \
-		var ranged_collision_mask : int = DEFAULT_RANGE_MASK: set = _set_ranged_collision_mask
+@export_flags_3d_physics var ranged_collision_mask: int = DEFAULT_RANGE_MASK:
+	set = _set_ranged_collision_mask
 
 ## Throw impulse factor
-@export var impulse_factor : float = 1.0
+@export var impulse_factor: float = 1.0
 
 ## Throw velocity averaging
 @export var velocity_samples: int = 5
 
-
 # Public fields
-var closest_object : Node3D = null
-var picked_up_object : Node3D = null
-var picked_up_ranged : bool = false
-var grip_pressed : bool = false
+var closest_object: Node3D = null
+var picked_up_object: Node3D = null
+var picked_up_ranged: bool = false
+var grip_pressed: bool = false
 
 # Private fields
 var _object_in_grab_area := Array()
 var _object_in_ranged_area := Array()
 var _velocity_averager := XRToolsVelocityAverager.new(velocity_samples)
-var _grab_area : Area3D
-var _grab_collision : CollisionShape3D
-var _ranged_area : Area3D
-var _ranged_collision : CollisionShape3D
-var _active_copied_collisions : Array[CopiedCollision]
+var _grab_area: Area3D
+var _grab_collision: CollisionShape3D
+var _ranged_area: Area3D
+var _ranged_collision: CollisionShape3D
+var _active_copied_collisions: Array[CopiedCollision]
 
 ## Controller
 @onready var _controller := XRHelpers.get_xr_controller(self)
 
 ## Collision hand (if applicable)
-@onready var _collision_hand : XRToolsCollisionHand = XRToolsCollisionHand.find_ancestor(self)
+@onready var _collision_hand: XRToolsCollisionHand = XRToolsCollisionHand.find_ancestor(self)
 
 ## Grip threshold (from configuration)
-@onready var _grip_threshold : float = XRTools.get_grip_threshold()
+@onready var _grip_threshold: float = XRTools.get_grip_threshold()
 
 
 # Add support for is_xr_class on XRTools classes
-func is_xr_class(name : String) -> bool:
+func is_xr_class(name: String) -> bool:
 	return name == "XRToolsFunctionPickup"
 
 
@@ -130,7 +132,7 @@ func _ready():
 	_ranged_collision = CollisionShape3D.new()
 	_ranged_collision.set_name("RangedCollisionShape")
 	_ranged_collision.shape = CylinderShape3D.new()
-	_ranged_collision.transform.basis = Basis(Vector3.RIGHT, PI/2)
+	_ranged_collision.transform.basis = Basis(Vector3.RIGHT, PI / 2)
 
 	# Create the ranged area
 	_ranged_area = Area3D.new()
@@ -164,10 +166,10 @@ func _process(delta):
 
 	# Handle our grip
 	var grip_value = _controller.get_float(pickup_axis_action)
-	if (grip_pressed and grip_value < (_grip_threshold - 0.1)):
+	if grip_pressed and grip_value < (_grip_threshold - 0.1):
 		grip_pressed = false
 		_on_grip_release()
-	elif (!grip_pressed and grip_value > (_grip_threshold + 0.1)):
+	elif !grip_pressed and grip_value > (_grip_threshold + 0.1):
 		grip_pressed = true
 		_on_grip_pressed()
 
@@ -187,33 +189,33 @@ func _process(delta):
 ##
 ## This function searches from the specified node for an [XRToolsFunctionPickup]
 ## assuming the node is a sibling of the pickup under an [XRController3D].
-static func find_instance(node : Node) -> XRToolsFunctionPickup:
-	return XRTools.find_xr_child(
-		XRHelpers.get_xr_controller(node),
-		"*",
-		"XRToolsFunctionPickup") as XRToolsFunctionPickup
+static func find_instance(node: Node) -> XRToolsFunctionPickup:
+	return (
+		XRTools.find_xr_child(XRHelpers.get_xr_controller(node), "*", "XRToolsFunctionPickup")
+		as XRToolsFunctionPickup
+	)
 
 
 ## Find the left [XRToolsFunctionPickup] node.
 ##
 ## This function searches from the specified node for the left controller
 ## [XRToolsFunctionPickup] assuming the node is a sibling of the [XOrigin3D].
-static func find_left(node : Node) -> XRToolsFunctionPickup:
-	return XRTools.find_xr_child(
-		XRHelpers.get_left_controller(node),
-		"*",
-		"XRToolsFunctionPickup") as XRToolsFunctionPickup
+static func find_left(node: Node) -> XRToolsFunctionPickup:
+	return (
+		XRTools.find_xr_child(XRHelpers.get_left_controller(node), "*", "XRToolsFunctionPickup")
+		as XRToolsFunctionPickup
+	)
 
 
 ## Find the right [XRToolsFunctionPickup] node.
 ##
 ## This function searches from the specified node for the right controller
 ## [XRToolsFunctionPickup] assuming the node is a sibling of the [XROrigin3D].
-static func find_right(node : Node) -> XRToolsFunctionPickup:
-	return XRTools.find_xr_child(
-		XRHelpers.get_right_controller(node),
-		"*",
-		"XRToolsFunctionPickup") as XRToolsFunctionPickup
+static func find_right(node: Node) -> XRToolsFunctionPickup:
+	return (
+		XRTools.find_xr_child(XRHelpers.get_right_controller(node), "*", "XRToolsFunctionPickup")
+		as XRToolsFunctionPickup
+	)
 
 
 ## Get the [XRController3D] driving this pickup.
@@ -272,7 +274,7 @@ func _update_colliders() -> void:
 # Called when an object enters the grab sphere
 func _on_grab_entered(target: Node3D) -> void:
 	# reject objects which don't support picking up
-	if not target.has_method('pick_up'):
+	if not target.has_method("pick_up"):
 		return
 
 	# ignore objects already known
@@ -286,7 +288,7 @@ func _on_grab_entered(target: Node3D) -> void:
 # Called when an object enters the ranged-grab cylinder
 func _on_ranged_entered(target: Node3D) -> void:
 	# reject objects which don't support picking up rangedly
-	if not 'can_ranged_grab' in target or not target.can_ranged_grab:
+	if not "can_ranged_grab" in target or not target.can_ranged_grab:
 		return
 
 	# ignore objects already known
@@ -343,7 +345,8 @@ func _get_closest_grab() -> Node3D:
 
 		# Save if this object is closer than the current best
 		var distance_squared := global_transform.origin.distance_squared_to(
-				o.global_transform.origin)
+			o.global_transform.origin
+		)
 		if distance_squared < new_closest_distance:
 			new_closest_obj = o
 			new_closest_distance = distance_squared
@@ -386,7 +389,8 @@ func drop_object() -> void:
 	picked_up_object.let_go(
 		self,
 		_velocity_averager.linear_velocity() * impulse_factor,
-		_velocity_averager.angular_velocity())
+		_velocity_averager.angular_velocity()
+	)
 	picked_up_object = null
 
 	if _collision_hand:
@@ -439,15 +443,17 @@ func _copy_collisions():
 
 	for child in picked_up_object.get_children():
 		if child is CollisionShape3D and not child.disabled:
-
-			var copied_collision : CopiedCollision = CopiedCollision.new()
+			var copied_collision: CopiedCollision = CopiedCollision.new()
 			copied_collision.collision_shape = CollisionShape3D.new()
 			copied_collision.collision_shape.shape = child.shape
 			copied_collision.org_transform = child.transform
 
-			_collision_hand.add_child(copied_collision.collision_shape, false, Node.INTERNAL_MODE_BACK)
-			copied_collision.collision_shape.global_transform = picked_up_object.global_transform * \
-				copied_collision.org_transform
+			_collision_hand.add_child(
+				copied_collision.collision_shape, false, Node.INTERNAL_MODE_BACK
+			)
+			copied_collision.collision_shape.global_transform = (
+				picked_up_object.global_transform * copied_collision.org_transform
+			)
 
 			_active_copied_collisions.push_back(copied_collision)
 
@@ -455,16 +461,17 @@ func _copy_collisions():
 # Adjust positions of our collisions to match actual location of object
 func _update_copied_collisions():
 	if is_instance_valid(_collision_hand) and is_instance_valid(picked_up_object):
-		for copied_collision : CopiedCollision in _active_copied_collisions:
+		for copied_collision: CopiedCollision in _active_copied_collisions:
 			if is_instance_valid(copied_collision.collision_shape):
-				copied_collision.collision_shape.global_transform = picked_up_object.global_transform * \
-					copied_collision.org_transform
+				copied_collision.collision_shape.global_transform = (
+					picked_up_object.global_transform * copied_collision.org_transform
+				)
 
 
 # Remove copied collision shapes
 func _remove_copied_collisions():
 	if is_instance_valid(_collision_hand):
-		for copied_collision : CopiedCollision in _active_copied_collisions:
+		for copied_collision: CopiedCollision in _active_copied_collisions:
 			if is_instance_valid(copied_collision.collision_shape):
 				_collision_hand.remove_child(copied_collision.collision_shape)
 				copied_collision.collision_shape.queue_free()

@@ -1,6 +1,5 @@
 extends Node
 
-
 ## XR Tools Rumble (Controllers) Manager Script
 ##
 ## This script uses the controller's existing rumble intensity variable,
@@ -10,13 +9,11 @@ extends Node
 ## Example: something hits you while you're mowing the lawn,
 ## i.e. a short intense rumble happens during long low rumble.
 
-
 ## Name in the OpenXR Action Map for haptics
-const HAPTIC_ACTION := &"haptic" # TODO: Migrate
+const HAPTIC_ACTION := &"haptic"  # TODO: Migrate
 
 # Shorthand for all trackers, in use to be substituted with _queues.keys()
 const ALL_TRACKERS := [&"all"]
-
 
 # A Queue Per Haptic device (Dictionary<StringName, XRToolsRumbleManagerQueue>)
 var _queues: Dictionary = {}
@@ -71,14 +68,14 @@ func _process(delta: float) -> void:
 	var delta_ms = int(delta * 1000)
 
 	for tracker_name in _queues:
-		var haptic_queue : XRToolsRumbleManagerQueue = _queues[tracker_name]
+		var haptic_queue: XRToolsRumbleManagerQueue = _queues[tracker_name]
 
 		# default to noXRToolsRumbleManagerQueuensure it's a float, or it rounds to all or nothing!)
 		var magnitude: float = 0.0
 
 		# Iterate over the events
 		for key in haptic_queue.events.keys():
-			var event : XRToolsRumbleEvent = haptic_queue.events[key]
+			var event: XRToolsRumbleEvent = haptic_queue.events[key]
 
 			# if we're paused and it's not supposed to be active, skip
 			if get_tree().paused and not event.active_during_pause:
@@ -102,17 +99,12 @@ func _process(delta: float) -> void:
 		# Make that tracker rumble
 		if magnitude > 0:
 			XRServer.primary_interface.trigger_haptic_pulse(
-				HAPTIC_ACTION,
-				tracker_name, # if the tracker name isn't valid, it will error but continue
-				0,
-				magnitude,
-				0.1,
-				0)
+				HAPTIC_ACTION, tracker_name, 0, magnitude, 0.1, 0  # if the tracker name isn't valid, it will error but continue
+			)
 
 
 # Add an event
-func add(event_key: Variant, event: XRToolsRumbleEvent,
-		trackers: Array = ALL_TRACKERS) -> void:
+func add(event_key: Variant, event: XRToolsRumbleEvent, trackers: Array = ALL_TRACKERS) -> void:
 	if not event_key:
 		push_error("Event key is invalid!")
 		return

@@ -9,9 +9,11 @@ extends Node
 ## a particular rumble event.
 
 ## The details of this rumbler
-@export var event: XRToolsRumbleEvent : set = _set_event
+@export var event: XRToolsRumbleEvent:
+	set = _set_event
 
 @export var target: XRNode3D
+
 
 ## Activate the event
 func rumble() -> void:
@@ -51,7 +53,7 @@ func cancel_if_player_body(body: Node3D) -> void:
 
 
 ## Activate the event during an active pointer event
-func rumble_pointer(event : XRToolsPointerEvent) -> void:
+func rumble_pointer(event: XRToolsPointerEvent) -> void:
 	if event.event_type == XRToolsPointerEvent.Type.PRESSED:
 		rumble_hand(event.pointer)
 	elif event.event_type == XRToolsPointerEvent.Type.RELEASED:
@@ -73,4 +75,3 @@ func _get_configuration_warnings() -> PackedStringArray:
 
 	# Return warnings
 	return warnings
-

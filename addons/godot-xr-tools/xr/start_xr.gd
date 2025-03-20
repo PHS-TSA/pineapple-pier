@@ -2,7 +2,6 @@
 class_name XRToolsStartXR
 extends Node
 
-
 ## XRTools Start XR Class
 ##
 ## This class supports both the OpenXR and WebXR interfaces, and handles
@@ -10,7 +9,6 @@ extends Node
 ## starts and ends the VR session.
 ##
 ## For OpenXR this class also supports passthrough on compatible devices.
-
 
 ## This signal is emitted when XR becomes active. For OpenXR this corresponds
 ## with the 'openxr_focused_state' signal which occurs when the application
@@ -27,35 +25,33 @@ signal xr_ended
 ## This signal is emitted if XR fails to initialize.
 signal xr_failed_to_initialize
 
-
 ## XR active flag
-static var _xr_active : bool = false
-
+static var _xr_active: bool = false
 
 ## Optional viewport to control
-@export var viewport : Viewport
+@export var viewport: Viewport
 
 ## Adjusts the pixel density on the rendering target
-@export var render_target_size_multiplier : float = 1.0
+@export var render_target_size_multiplier: float = 1.0
 
 ## If true, the XR passthrough is enabled (OpenXR only)
-@export var enable_passthrough : bool = false: set = _set_enable_passthrough
+@export var enable_passthrough: bool = false:
+	set = _set_enable_passthrough
 
 ## Physics rate multiplier compared to HMD frame rate
-@export var physics_rate_multiplier : int = 1
+@export var physics_rate_multiplier: int = 1
 
 ## If non-zero, specifies the target refresh rate
-@export var target_refresh_rate : float = 0
-
+@export var target_refresh_rate: float = 0
 
 ## Current XR interface
-var xr_interface : XRInterface
+var xr_interface: XRInterface
 
 ## XR frame rate
-var xr_frame_rate : float = 0
+var xr_frame_rate: float = 0
 
 # Is a WebXR is_session_supported query running
-var _webxr_session_query : bool = false
+var _webxr_session_query: bool = false
 
 
 # Handle auto-initialization when ready
@@ -67,12 +63,12 @@ func _ready() -> void:
 ## Initialize the XR interface
 func _initialize() -> bool:
 	# Check for OpenXR interface
-	xr_interface = XRServer.find_interface('OpenXR')
+	xr_interface = XRServer.find_interface("OpenXR")
 	if xr_interface:
 		return _setup_for_openxr()
 
 	# Check for WebXR interface
-	xr_interface = XRServer.find_interface('WebXR')
+	xr_interface = XRServer.find_interface("WebXR")
 	if xr_interface:
 		return _setup_for_webxr()
 
@@ -182,7 +178,7 @@ func _on_openxr_focused_state() -> void:
 
 
 # Handle changes to the enable_passthrough property
-func _set_enable_passthrough(p_new_value : bool) -> void:
+func _set_enable_passthrough(p_new_value: bool) -> void:
 	# Save the new value
 	enable_passthrough = p_new_value
 
@@ -217,7 +213,7 @@ func _setup_for_webxr() -> bool:
 	# (which we connected to the "session_supported" signal above) will
 	# be called sometime later to let us know if it's supported or not.
 	_webxr_session_query = true
-	xr_interface.is_session_supported('immersive-ar' if enable_passthrough else 'immersive-vr')
+	xr_interface.is_session_supported("immersive-ar" if enable_passthrough else "immersive-vr")
 
 	# Report success
 	return true
@@ -282,10 +278,10 @@ func _on_webxr_session_failed(message: String) -> void:
 # Handle the Enter VR button on the WebXR browser
 func _on_enter_webxr_button_pressed() -> void:
 	# Configure the WebXR interface
-	xr_interface.session_mode = 'immersive-ar' if enable_passthrough else 'immersive-vr'
-	xr_interface.requested_reference_space_types = 'bounded-floor, local-floor, local'
-	xr_interface.required_features = 'local-floor'
-	xr_interface.optional_features = 'bounded-floor'
+	xr_interface.session_mode = "immersive-ar" if enable_passthrough else "immersive-vr"
+	xr_interface.requested_reference_space_types = "bounded-floor, local-floor, local"
+	xr_interface.required_features = "local-floor"
+	xr_interface.optional_features = "bounded-floor"
 
 	# Add hand-tracking if enabled in the project settings
 	if ProjectSettings.get_setting_with_override("xr/openxr/extensions/hand_tracking"):
@@ -308,7 +304,7 @@ func _set_xr_frame_rate() -> void:
 
 	# Pick a desired refresh rate
 	var desired_rate := target_refresh_rate if target_refresh_rate > 0 else xr_frame_rate
-	var available_rates : Array = xr_interface.get_available_display_refresh_rates()
+	var available_rates: Array = xr_interface.get_available_display_refresh_rates()
 	if available_rates.size() == 0:
 		print("StartXR: Target does not support refresh rate extension")
 	elif available_rates.size() == 1:
@@ -329,13 +325,13 @@ func _set_xr_frame_rate() -> void:
 
 
 # Find the closest value in the array to the target
-func _find_closest(values : Array, target : float) -> float:
+func _find_closest(values: Array, target: float) -> float:
 	# Return 0 if no values
 	if values.size() == 0:
 		return 0.0
 
 	# Find the closest value to the target
-	var best : float = values.front()
+	var best: float = values.front()
 	for v in values:
 		if abs(target - v) < abs(target - best):
 			best = v

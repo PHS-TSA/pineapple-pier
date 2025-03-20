@@ -9,6 +9,7 @@ signal player_height_changed(new_height)
 @onready var player_height_slider = $Player/PlayerVBox/PlayerHeight/PlayerHeightSlider
 @onready var webxr_primary_button = $WebXR/WebXRVBox/WebXR/WebXRPrimary
 
+
 func _update():
 	# Input
 	snap_turning_button.button_pressed = XRToolsUserSettings.snap_turning

@@ -2,18 +2,16 @@
 class_name XRToolsGrabPointSnap
 extends XRToolsGrabPoint
 
-
 ## XR Tools Grab Point Snap Script
 ##
 ## This script allows specifying a grab point for snap zones. It supports
 ## group-filters if different points are required for different snap zones.
 
-
 ## Require grab-by to be in the specified group
-@export var require_group : String = ""
+@export var require_group: String = ""
 
 ## Deny grab-by if in the specified group
-@export var exclude_group : String = ""
+@export var exclude_group: String = ""
 
 
 # Called when the node enters the scene tree for the first time.
@@ -24,7 +22,7 @@ func _ready():
 
 
 ## Evaluate fitness of the proposed grab, with 0.0 for not allowed.
-func can_grab(grabber : Node3D, current : XRToolsGrabPoint) -> float:
+func can_grab(grabber: Node3D, current: XRToolsGrabPoint) -> float:
 	# Skip if not enabled or current grab
 	if not enabled or current:
 		return 0.0

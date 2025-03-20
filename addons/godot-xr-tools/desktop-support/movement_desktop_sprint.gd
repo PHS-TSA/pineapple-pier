@@ -2,7 +2,6 @@
 class_name XRToolsDesktopMovementSprint
 extends XRToolsMovementProvider
 
-
 ## XR Tools Movement Provider for Sprinting
 ##
 ## This script provides sprinting movement for the player. It assumes there is
@@ -12,55 +11,47 @@ extends XRToolsMovementProvider
 ## have any impact on the player.  This node should be a direct child of
 ## the [XROrigin3D] node rather than to a specific [XRController3D].
 
-
 ## Signal emitted when sprinting starts
-signal sprinting_started()
+signal sprinting_started
 
 ## Signal emitted when sprinting finishes
-signal sprinting_finished()
-
+signal sprinting_finished
 
 ## Enumeration of sprinting modes - toggle or hold button
 enum SprintType {
-	HOLD_TO_SPRINT,	## Hold button to sprint
-	TOGGLE_SPRINT,	## Toggle sprinting on button press
+	HOLD_TO_SPRINT,  ## Hold button to sprint
+	TOGGLE_SPRINT,  ## Toggle sprinting on button press
 }
 
-
 ## Type of sprinting
-@export var sprint_type : SprintType = SprintType.HOLD_TO_SPRINT
+@export var sprint_type: SprintType = SprintType.HOLD_TO_SPRINT
 
 ## Sprint speed multiplier (multiplier from speed set by direct movement node(s))
-@export_range(1.0, 4.0) var sprint_speed_multiplier : float = 2.0
+@export_range(1.0, 4.0) var sprint_speed_multiplier: float = 2.0
 
 ## Movement provider order
-@export var order : int = 11
+@export var order: int = 11
 
 ## Sprint button
-@export var sprint_button : String = "action_sprint"
+@export var sprint_button: String = "action_sprint"
 
 # Sprint button down state
-var _sprint_button_down : bool = false
+var _sprint_button_down: bool = false
 
 # Variable to hold left controller direct movement node original max speed
-var _direct_original_max_speed : float = 0.0
-
+var _direct_original_max_speed: float = 0.0
 
 # XRStart node
 @onready var xr_start_node = XRTools.find_xr_child(
-	XRTools.find_xr_ancestor(self,
-	"*Staging",
-	"XRToolsStaging"),"StartXR","Node")
-
+	XRTools.find_xr_ancestor(self, "*Staging", "XRToolsStaging"), "StartXR", "Node"
+)
 
 # Variable used to cache left controller direct movement function, if any
 @onready var _desktop_direct_move := XRToolsDesktopMovementDirect.find(self)
 
 
-
-
 # Add support for is_xr_class on XRTools classes
-func is_xr_class(name : String) -> bool:
+func is_xr_class(name: String) -> bool:
 	return name == "XRToolsDesktopMovementSprint" or super(name)
 
 
@@ -120,8 +111,7 @@ func set_sprinting(active: bool) -> void:
 		# Set both controllers' direct movement functions, if appliable, to
 		# the sprinting speed
 		if _desktop_direct_move:
-			_desktop_direct_move.max_speed = \
-					_direct_original_max_speed * sprint_speed_multiplier
+			_desktop_direct_move.max_speed = _direct_original_max_speed * sprint_speed_multiplier
 	else:
 		# We are not sprinting
 		emit_signal("sprinting_finished")

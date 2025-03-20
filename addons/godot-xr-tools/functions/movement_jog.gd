@@ -2,7 +2,6 @@
 class_name XRToolsMovementJog
 extends XRToolsMovementProvider
 
-
 ## XR Tools Movement Provider for Jog Movement
 ##
 ## This script provides jog-in-place movement for the player. This script
@@ -12,14 +11,8 @@ extends XRToolsMovementProvider
 ## the approximate frequency of jog arm-swings; and uses that to
 ## switch between stopped, slow, and fast movement speeds.
 
-
 ## Speed mode enumeration
-enum SpeedMode {
-	STOPPED,	## Not jogging
-	SLOW,		## Jogging slowly
-	FAST		## Jogging fast
-}
-
+enum SpeedMode { STOPPED, SLOW, FAST }  ## Not jogging  ## Jogging slowly  ## Jogging fast
 
 ## Jog arm-swing frequency in Hz to trigger slow movement
 const JOG_SLOW_FREQ := 3.5
@@ -27,16 +20,14 @@ const JOG_SLOW_FREQ := 3.5
 ## Jog arm-swing frequency in Hz to trigger fast movement
 const JOG_FAST_FREQ := 5.5
 
-
 ## Movement provider order
-@export var order : int = 10
+@export var order: int = 10
 
 ## Slow jogging speed in meters-per-second
-@export var slow_speed : float = 1.0
+@export var slow_speed: float = 1.0
 
 ## Fast jogging speed in meters-per-second
-@export var fast_speed : float = 3.0
-
+@export var fast_speed: float = 3.0
 
 # Jog arm-swing "stroke" detector "confidence-hat" signal
 var _conf_hat := 0.0
@@ -50,7 +41,6 @@ var _last_stroke := 0.0
 # Current jog-speed mode
 var _speed_mode := SpeedMode.STOPPED
 
-
 # Left controller
 @onready var _left_controller := XRHelpers.get_left_controller(self)
 
@@ -59,7 +49,7 @@ var _speed_mode := SpeedMode.STOPPED
 
 
 # Add support for is_xr_class on XRTools classes
-func is_xr_class(name : String) -> bool:
+func is_xr_class(name: String) -> bool:
 	return name == "XRToolsMovementJog" or super(name)
 
 
@@ -99,7 +89,7 @@ func physics_movement(delta: float, player_body: XRToolsPlayerBody, _disabled: b
 
 
 # Get the frequency of the last arm-swing "stroke" in Hz.
-func _get_stroke_frequency(delta : float) -> float:
+func _get_stroke_frequency(delta: float) -> float:
 	# Get the controller velocities
 	var vl := _left_controller.get_pose().linear_velocity.y
 	var vr := _right_controller.get_pose().linear_velocity.y

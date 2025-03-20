@@ -2,20 +2,19 @@
 class_name XRToolsSnapPath
 extends XRToolsSnapZone
 
-
 ## An [XRToolsSnapZone] that allows [XRToolsPickable] to be placed along a
 ## child [Path3D] node. They can either be placed along any point in the curve
 ## or at discrete intervals by setting "snap_interval" above '0.0'.
 ##
 ## Note: Attached [XRToolsPickable]s will face the +Z axis.
 
-
 ## Real world distance between intervals in Meters.
 ## Enabled when not 0
-@export  var snap_interval := 0.0:
-	set(v): snap_interval = absf(v)
+@export var snap_interval := 0.0:
+	set(v):
+		snap_interval = absf(v)
 
-@onready var path : Path3D
+@onready var path: Path3D
 
 
 func _ready() -> void:
@@ -36,26 +35,32 @@ func _get_configuration_warnings() -> PackedStringArray:
 	for c in get_children():
 		if c is Path3D:
 			path = c
-			return[]
-	return["This node requires a Path3D child node to define its shape."]
+			return []
+	return ["This node requires a Path3D child node to define its shape."]
 
 
 # Called when a target in our grab area is dropped
 func _on_target_dropped(target: Node3D) -> void:
 	# Skip if invalid
-	if !enabled or !path or !target.can_pick_up(self) or \
-		!is_instance_valid(target) or \
-		is_instance_valid(picked_up_object):
+	if (
+		!enabled
+		or !path
+		or !target.can_pick_up(self)
+		or !is_instance_valid(target)
+		or is_instance_valid(picked_up_object)
+	):
 		return
 
 	# Make a zone that will destruct once its object has left
-	var zone   = _make_temp_zone()
+	var zone = _make_temp_zone()
 	var offset = _find_offset(path, target.global_position)
 
 	# if snap guide
 	if _has_snap_guide(target):
 		# comply with guide
-		offset = _find_closest_offset_with_length(path.curve, offset, _get_snap_guide(target).length)
+		offset = _find_closest_offset_with_length(
+			path.curve, offset, _get_snap_guide(target).length
+		)
 
 		# too large to place on path
 		if is_equal_approx(offset, -1.0):
@@ -90,27 +95,27 @@ func _make_temp_zone():
 
 	# connect lambda to play stash sounds when temp zone picks up
 	if has_node("AudioStreamPlayer3D"):
-		zone.has_picked_up.connect(\
-		func(object):\
-			$AudioStreamPlayer3D.stream = stash_sound;\
-			$AudioStreamPlayer3D.play()\
+		zone.has_picked_up.connect(
+			func(object):
+				$AudioStreamPlayer3D.stream = stash_sound
+				$AudioStreamPlayer3D.play()
 		)
 
 	# XRToolsSnapZone manaul copy
-	zone.enabled        = true
-	zone.stash_sound    = stash_sound
-	zone.grab_distance  = grab_distance
-	zone.snap_mode      = snap_mode
-	zone.snap_require   = snap_require
-	zone.snap_exclude   = snap_exclude
-	zone.grab_require   = grab_require
-	zone.grab_exclude   = grab_exclude
+	zone.enabled = true
+	zone.stash_sound = stash_sound
+	zone.grab_distance = grab_distance
+	zone.snap_mode = snap_mode
+	zone.snap_require = snap_require
+	zone.snap_exclude = snap_exclude
+	zone.grab_require = grab_require
+	zone.grab_exclude = grab_exclude
 	zone.initial_object = NodePath()
 
 	# CollisionObject3D manual copy
-	zone.disable_mode       = disable_mode
-	zone.collision_layer    = collision_layer
-	zone.collision_mask     = collision_mask
+	zone.disable_mode = disable_mode
+	zone.collision_layer = collision_layer
+	zone.collision_mask = collision_mask
 	zone.collision_priority = collision_priority
 
 	return zone
@@ -134,13 +139,13 @@ func _get_snap_guide(target: Node3D) -> Node3D:
 # _offset should be in _curve's local coordinates
 func _find_closest_offset_with_length(_curve: Curve3D, _offset: float, _length: float) -> float:
 	# p1 and p2 are the object's start and end respectively
-	var p1      = _offset
-	var p2      = _offset - _length
+	var p1 = _offset
+	var p2 = _offset - _length
 
 	# a _curve's final point is its end, aka the furthest 'forward', which is why it is p1
 	# path_p1 and path_p2 are the curve's start and end respectively
-	var path_p1  := _curve.get_closest_offset(_curve.get_point_position(_curve.point_count-1))
-	var path_p2  := _curve.get_closest_offset(_curve.get_point_position(0))
+	var path_p1 := _curve.get_closest_offset(_curve.get_point_position(_curve.point_count - 1))
+	var path_p2 := _curve.get_closest_offset(_curve.get_point_position(0))
 
 	# if at front (or beyond)
 	if is_equal_approx(p1, path_p1):

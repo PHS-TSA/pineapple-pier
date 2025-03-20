@@ -2,7 +2,6 @@
 class_name XRToolsPickable
 extends RigidBody3D
 
-
 ## XR Tools Pickable Object
 ##
 ## This script allows a [RigidBody3D] to be picked up by an
@@ -13,7 +12,6 @@ extends RigidBody3D
 ##
 ## Grab-points can be defined by adding different types of [XRToolsGrabPoint]
 ## child nodes controlling hand and snap-zone grab locations.
-
 
 # Signal emitted when this object is picked up (held by a player or snap-zone)
 signal picked_up(pickable)
@@ -36,64 +34,61 @@ signal action_released(pickable)
 # Signal emitted when the highlight state changes
 signal highlight_updated(pickable, enable)
 
-
 ## Method used to grab object at range
 enum RangedMethod {
-	NONE,				## Ranged grab is not supported
-	SNAP,				## Object snaps to holder
-	LERP,				## Object lerps to holder
+	NONE,  ## Ranged grab is not supported
+	SNAP,  ## Object snaps to holder
+	LERP,  ## Object lerps to holder
 }
 
 enum ReleaseMode {
-	ORIGINAL = -1,		## Preserve original mode when picked up
-	UNFROZEN = 0,		## Release and unfreeze
-	FROZEN = 1,			## Release and freeze
+	ORIGINAL = -1,  ## Preserve original mode when picked up
+	UNFROZEN = 0,  ## Release and unfreeze
+	FROZEN = 1,  ## Release and freeze
 }
 
 enum SecondHandGrab {
-	IGNORE,				## Ignore second grab
-	SWAP,				## Swap to second hand
-	SECOND,				## Second hand grab
+	IGNORE,  ## Ignore second grab
+	SWAP,  ## Swap to second hand
+	SECOND,  ## Second hand grab
 }
-
 
 # Default layer for held objects is 17:held-object
 const DEFAULT_LAYER := 0b0000_0000_0000_0001_0000_0000_0000_0000
 
-
 ## If true, the pickable supports being picked up
-@export var enabled : bool = true
+@export var enabled: bool = true
 
 ## If true, the grip control must be held to keep the object picked up
-@export var press_to_hold : bool = true
+@export var press_to_hold: bool = true
 
 ## Layer for this object while picked up
-@export_flags_3d_physics var picked_up_layer : int = DEFAULT_LAYER
+@export_flags_3d_physics var picked_up_layer: int = DEFAULT_LAYER
 
 ## Release mode to use when releasing the object
-@export var release_mode : ReleaseMode = ReleaseMode.ORIGINAL
+@export var release_mode: ReleaseMode = ReleaseMode.ORIGINAL
 
 ## Method used to perform a ranged grab
-@export var ranged_grab_method : RangedMethod = RangedMethod.SNAP: set = _set_ranged_grab_method
+@export var ranged_grab_method: RangedMethod = RangedMethod.SNAP:
+	set = _set_ranged_grab_method
 
 ## Second hand grab mode
-@export var second_hand_grab : SecondHandGrab = SecondHandGrab.IGNORE
+@export var second_hand_grab: SecondHandGrab = SecondHandGrab.IGNORE
 
 ## Speed for ranged grab
-@export var ranged_grab_speed : float = 20.0
+@export var ranged_grab_speed: float = 20.0
 
 ## Refuse pick-by when in the specified group
-@export var picked_by_exclude : String = ""
+@export var picked_by_exclude: String = ""
 
 ## Require pick-by to be in the specified group
-@export var picked_by_require : String = ""
-
+@export var picked_by_require: String = ""
 
 ## If true, the object can be picked up at range
 var can_ranged_grab: bool = true
 
 ## Frozen state to restore to when dropped
-var restore_freeze : bool = false
+var restore_freeze: bool = false
 
 # Count of 'is_closest' grabbers
 var _closest_count: int = 0
@@ -102,22 +97,21 @@ var _closest_count: int = 0
 var _grab_driver: XRToolsGrabDriver = null
 
 # Array of grab points
-var _grab_points : Array[XRToolsGrabPoint] = []
+var _grab_points: Array[XRToolsGrabPoint] = []
 
 # Dictionary of nodes requesting highlight
-var _highlight_requests : Dictionary = {}
+var _highlight_requests: Dictionary = {}
 
 # Is this node highlighted
-var _highlighted : bool = false
-
+var _highlighted: bool = false
 
 # Remember some state so we can return to it when the user drops the object
-@onready var original_collision_mask : int = collision_mask
-@onready var original_collision_layer : int = collision_layer
+@onready var original_collision_mask: int = collision_mask
+@onready var original_collision_layer: int = collision_layer
 
 
 # Add support for is_xr_class on XRTools classes
-func is_xr_class(name : String) -> bool:
+func is_xr_class(name: String) -> bool:
 	return name == "XRToolsPickable"
 
 
@@ -178,16 +172,18 @@ func action():
 	action_pressed.emit(self)
 
 
-func controller_action(controller : XRController3D):
+func controller_action(controller: XRController3D):
 	# Let the grab points know about the action
 	if (
-		_grab_driver.primary and _grab_driver.primary.point
+		_grab_driver.primary
+		and _grab_driver.primary.point
 		and _grab_driver.primary.controller == controller
 	):
 		_grab_driver.primary.point.action(self)
 
 	if (
-		_grab_driver.secondary and _grab_driver.secondary.point
+		_grab_driver.secondary
+		and _grab_driver.secondary.point
 		and _grab_driver.secondary.controller == controller
 	):
 		_grab_driver.secondary.point.action(self)
@@ -199,16 +195,18 @@ func action_release():
 	action_released.emit(self)
 
 
-func controller_action_release(controller : XRController3D):
+func controller_action_release(controller: XRController3D):
 	# Let the grab points know about the action release
 	if (
-		_grab_driver.primary and _grab_driver.primary.point
+		_grab_driver.primary
+		and _grab_driver.primary.point
 		and _grab_driver.primary.controller == controller
 	):
 		_grab_driver.primary.point.action_release(self)
 
 	if (
-		_grab_driver.secondary and _grab_driver.secondary.point
+		_grab_driver.secondary
+		and _grab_driver.secondary.point
 		and _grab_driver.secondary.controller == controller
 	):
 		_grab_driver.secondary.point.action_release(self)
@@ -217,7 +215,7 @@ func controller_action_release(controller : XRController3D):
 ## This method requests highlighting of the [XRToolsPickable].
 ## If [param from] is null then all highlighting requests are cleared,
 ## otherwise the highlight request is associated with the specified node.
-func request_highlight(from : Node, on : bool = true) -> void:
+func request_highlight(from: Node, on: bool = true) -> void:
 	# Save if we are highlighted
 	var old_highlighted := _highlighted
 
@@ -405,7 +403,7 @@ func get_active_grab_point() -> XRToolsGrabPoint:
 
 
 ## Switch the active grab-point for this object
-func switch_active_grab_point(grab_point : XRToolsGrabPoint):
+func switch_active_grab_point(grab_point: XRToolsGrabPoint):
 	# Skip if not picked up
 	if not is_picked_up():
 		return null
@@ -415,10 +413,10 @@ func switch_active_grab_point(grab_point : XRToolsGrabPoint):
 
 
 ## Find the most suitable grab-point for the grabber
-func _get_grab_point(grabber : Node3D, current : XRToolsGrabPoint) -> XRToolsGrabPoint:
+func _get_grab_point(grabber: Node3D, current: XRToolsGrabPoint) -> XRToolsGrabPoint:
 	# Find the best grab-point
 	var fitness := 0.0
-	var point : XRToolsGrabPoint = null
+	var point: XRToolsGrabPoint = null
 	for p in _grab_points:
 		var f := p.can_grab(grabber, current)
 		if f > fitness:

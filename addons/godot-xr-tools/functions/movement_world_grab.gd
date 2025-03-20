@@ -2,7 +2,6 @@
 class_name XRToolsMovementWorldGrab
 extends XRToolsMovementProvider
 
-
 ## XR Tools Movement Provider for World-Grab
 ##
 ## This script provides world-grab movement for the player. To add world-grab
@@ -13,16 +12,14 @@ extends XRToolsMovementProvider
 ## World-Grab areas inherit from the world_grab_area scene, or be [Area3D]
 ## nodes with the [XRToolsWorldGrabArea] script attached to them.
 
-
 ## Signal invoked when the player starts world-grab movement
 signal player_world_grab_start
 
 ## Signal invoked when the player ends world-grab movement
 signal player_world_grab_end
 
-
 ## Movement provider order
-@export var order : int = 15
+@export var order: int = 15
 
 ## Smallest world scale
 @export var world_scale_min := 0.5
@@ -30,13 +27,11 @@ signal player_world_grab_end
 ## Largest world scale
 @export var world_scale_max := 2.0
 
-
 # Left world-grab handle
-var _left_handle : Node3D
+var _left_handle: Node3D
 
 # Right world-grab handle
-var _right_handle : Node3D
-
+var _right_handle: Node3D
 
 # Left pickup node
 @onready var _left_pickup_node := XRToolsFunctionPickup.find_left(self)
@@ -52,7 +47,7 @@ var _right_handle : Node3D
 
 
 # Add support for is_xr_class on XRTools classes
-func is_xr_class(name : String) -> bool:
+func is_xr_class(name: String) -> bool:
 	return name == "XRToolsMovementGrabWorld" or super(name)
 
 
@@ -164,7 +159,7 @@ func _set_world_grab_moving(active: bool) -> void:
 
 
 ## Handler for left controller picked up
-func _on_left_picked_up(what : Node3D) -> void:
+func _on_left_picked_up(what: Node3D) -> void:
 	# Get the world-grab area
 	var world_grab_area = what as XRToolsWorldGrabArea
 	if not world_grab_area:
@@ -177,7 +172,7 @@ func _on_left_picked_up(what : Node3D) -> void:
 
 
 ## Handler for right controller picked up
-func _on_right_picked_up(what : Node3D) -> void:
+func _on_right_picked_up(what: Node3D) -> void:
 	# Get the world-grab area
 	var world_grab_area = what as XRToolsWorldGrabArea
 	if not world_grab_area:

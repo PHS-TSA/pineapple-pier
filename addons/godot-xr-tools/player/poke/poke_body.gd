@@ -1,27 +1,24 @@
 @tool
 extends XRToolsForceBody
 
-
 ## Signal called when we start to contact an object
 signal body_contact_start(node)
 
 ## Signal called when we end contact with an object
 signal body_contact_end(node)
 
-
 ## Distance at which we teleport our poke body
-@export var teleport_distance : float = 0.1
-
+@export var teleport_distance: float = 0.1
 
 # Node currently in contact with
-var _contact : Node3D = null
+var _contact: Node3D = null
 
 # Target XRToolsPoke
-@onready var _target : XRToolsPoke = get_parent()
+@onready var _target: XRToolsPoke = get_parent()
 
 
 # Add support for is_xr_class on XRTools classes
-func is_xr_class(name : String) -> bool:
+func is_xr_class(name: String) -> bool:
 	return name == "XRToolsPokeBody" or super(name)
 
 
@@ -67,8 +64,8 @@ func _physics_process(_delta):
 
 
 # If our player moved, attempt to move our poke.
-func _on_player_moved(delta_transform : Transform3D):
-	var target : Transform3D = delta_transform * global_transform
+func _on_player_moved(delta_transform: Transform3D):
+	var target: Transform3D = delta_transform * global_transform
 
 	# Rotate
 	global_basis = target.basis
@@ -80,6 +77,6 @@ func _on_player_moved(delta_transform : Transform3D):
 
 
 # If our player teleported, just move.
-func _on_player_teleported(delta_transform : Transform3D):
+func _on_player_teleported(delta_transform: Transform3D):
 	global_transform = delta_transform * global_transform
 	force_update_transform()

@@ -2,32 +2,29 @@
 class_name XRToolsFadeCollision
 extends Node3D
 
-
-
 @export_category("Collison")
 
 ## Layers to collide with
-@export_flags_3d_physics var collision_layers : int = 3
+@export_flags_3d_physics var collision_layers: int = 3
 
 ## Collision distance at which fading begins
-@export var fade_start_distance : float = 0.3
+@export var fade_start_distance: float = 0.3
 
 ## Collision distance for totally obscuring the view
-@export var fade_full_distance : float = 0.15
-
+@export var fade_full_distance: float = 0.15
 
 # Shape to use for collision detection
-var _collision_shape : Shape3D
+var _collision_shape: Shape3D
 
 # Parameters to use for collision detection
-var _collision_parameters : PhysicsShapeQueryParameters3D
+var _collision_parameters: PhysicsShapeQueryParameters3D
 
 # World space to use for collision detection
-var _space : PhysicsDirectSpaceState3D
+var _space: PhysicsDirectSpaceState3D
 
 
 # Add support for is_xr_class on XRTools classes
-func is_xr_class(name : String) -> bool:
+func is_xr_class(name: String) -> bool:
 	return name == "XRToolsFadeCollision"
 
 
@@ -47,7 +44,7 @@ func _ready() -> void:
 
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
-func _physics_process(_delta : float) -> void:
+func _physics_process(_delta: float) -> void:
 	# Update the collision parameters to include our global location
 	_collision_parameters.transform = global_transform
 

@@ -2,7 +2,6 @@
 class_name XRToolsDesktopMovementFlight
 extends XRToolsMovementProvider
 
-
 ## XR Tools Movement Provider for Flying
 ##
 ## This script provides flying movement for the player. The control parameters
@@ -28,58 +27,52 @@ extends XRToolsMovementProvider
 ## physics effects after flying) or whether additional effects such as
 ## the default player gravity are applied.
 
-
 ## Signal emitted when flight starts
-signal flight_started()
+signal flight_started
 
 ## Signal emitted when flight finishes
-signal flight_finished()
-
+signal flight_finished
 
 ## Movement provider order
-@export var order : int = 30
-
+@export var order: int = 30
 
 ## Flight toggle button
-@export var flight_button : String = "ui_focus_next"
-@export var input_forward : String = "ui_up"
-@export var input_backward : String = "ui_down"
-@export var input_left : String = "ui_left"
-@export var input_right : String = "ui_right"
+@export var flight_button: String = "ui_focus_next"
+@export var input_forward: String = "ui_up"
+@export var input_backward: String = "ui_down"
+@export var input_left: String = "ui_left"
+@export var input_right: String = "ui_right"
 
 ## Flight speed from control
-@export var speed_scale : float = 5.0
+@export var speed_scale: float = 5.0
 
 ## Flight traction pulling flight velocity towards the controlled speed
-@export var speed_traction : float = 3.0
+@export var speed_traction: float = 3.0
 
 ## Flight acceleration from control
-@export var acceleration_scale : float = 0.0
+@export var acceleration_scale: float = 0.0
 
 ## Flight drag
-@export var drag : float = 0.1
+@export var drag: float = 0.1
 
 ## Guidance effect (virtual fins/wings)
-@export var guidance : float = 0.0
+@export var guidance: float = 0.0
 
 ## If true, flight movement is exclusive preventing further movement functions
-@export var exclusive : bool = true
-
+@export var exclusive: bool = true
 
 ## Flight button state
-var _flight_button : bool = false
-
+var _flight_button: bool = false
 
 # Node references
 @onready var xr_start_node = XRTools.find_xr_child(
-	XRTools.find_xr_ancestor(self,
-	"*Staging",
-	"XRToolsStaging"),"StartXR","Node")
+	XRTools.find_xr_ancestor(self, "*Staging", "XRToolsStaging"), "StartXR", "Node"
+)
 @onready var _camera := XRHelpers.get_xr_camera(self)
 
 
 # Add support for is_xr_class on XRTools classes
-func is_xr_class(name : String) -> bool:
+func is_xr_class(name: String) -> bool:
 	return name == "XRToolsDesktopMovementFlight" or super(name)
 
 
@@ -113,8 +106,7 @@ func physics_movement(delta: float, player_body: XRToolsPlayerBody, disabled: bo
 	# Select the bearing vector
 	var bearing_vector: Vector3
 	# Use the horizontal part of the 'head' forwards vector
-	bearing_vector = -_camera.global_transform.basis.z \
-			.slide(player_body.up_player)
+	bearing_vector = -_camera.global_transform.basis.z.slide(player_body.up_player)
 
 	# Construct the flight bearing
 	var forwards := (bearing_vector.normalized() + pitch_vector).normalized()
@@ -122,8 +114,8 @@ func physics_movement(delta: float, player_body: XRToolsPlayerBody, disabled: bo
 
 	# Construct the target velocity
 	var input_dir = Input.get_vector(input_left, input_right, input_backward, input_forward)
-	var joy_forwards :float= input_dir.y
-	var joy_side :float= input_dir.x
+	var joy_forwards: float = input_dir.y
+	var joy_side: float = input_dir.x
 	var heading := forwards * joy_forwards + side * joy_side
 
 	# Calculate the flight velocity

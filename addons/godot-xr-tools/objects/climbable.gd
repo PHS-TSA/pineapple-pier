@@ -3,7 +3,6 @@
 class_name XRToolsClimbable
 extends Node3D
 
-
 ## XR Tools Climbable Object
 ##
 ## This script adds climbing support to any [StaticBody3D].
@@ -11,23 +10,21 @@ extends Node3D
 ## For climbing to work, the player must have an [XRToolsMovementClimb] node
 ## configured appropriately.
 
-
 ## If true, the grip control must be held to keep holding the climbable
-var press_to_hold : bool = true
-
+var press_to_hold: bool = true
 
 ## Array of permanent grab points.
-var _grab_points : Array[XRToolsGrabPoint] = []
+var _grab_points: Array[XRToolsGrabPoint] = []
 
 ## Dictionary of temporary grabs keyed by the pickup node
-var _grab_temps : Dictionary = {}
+var _grab_temps: Dictionary = {}
 
 ## Dictionary of active grabs keyed by the pickup node
-var _grabs : Dictionary = {}
+var _grabs: Dictionary = {}
 
 
 # Add support for is_xr_class on XRTools classes
-func is_xr_class(name : String) -> bool:
+func is_xr_class(name: String) -> bool:
 	return name == "XRToolsClimbable"
 
 
@@ -81,7 +78,7 @@ func pick_up(by: Node3D) -> void:
 
 # Called by XRToolsFunctionPickup when this is let go by a controller
 func let_go(by: Node3D, _p_linear_velocity: Vector3, _p_angular_velocity: Vector3) -> void:
-	_grabs.erase(by);
+	_grabs.erase(by)
 
 
 # Get the grab handle
@@ -90,10 +87,10 @@ func get_grab_handle(by: Node3D) -> Node3D:
 
 
 ## Find the most suitable grab-point for the grabber
-func _get_grab_point(by : Node3D) -> Node3D:
+func _get_grab_point(by: Node3D) -> Node3D:
 	# Find the best grab-point
 	var fitness := 0.0
-	var point : XRToolsGrabPoint = null
+	var point: XRToolsGrabPoint = null
 	for p in _grab_points:
 		var f := p.can_grab(by, null)
 		if f > fitness:
