@@ -1,0 +1,161 @@
+# This workflow file builds the project for multiple targets.
+---
+name: Publish
+
+on:
+  push:
+    branches:
+      - "main"
+  pull_request:
+    types:
+      - opened
+      - synchronize
+  merge_group:
+  schedule:
+    - cron: "0 14 * * 1" # every monday at 9 in the morning CST
+  workflow_dispatch:
+
+env:
+  CI: true
+  GODOT_VERSION: 4.4.0
+  OPENXR_VENDORS_VERSION: 3.1.2-stable
+
+permissions: {}
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  build:
+    name: Building for ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+
+    permissions:
+      contents: write
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: 🏁 Windows
+            os: windows-latest
+            platform: windows
+            export-preset: Windows
+            export-type: release
+            export-folder: build/windows
+            archive: Windows
+          - name: 🐧 Linux
+            os: ubuntu-latest
+            platform: linux
+            export-preset: Linux
+            export-type: release
+            export-folder: build/linux
+            archive: Linux
+          - name: 🤖 Android Quest
+            os: ubuntu-latest
+            platform: android
+            export-preset: Android Quest
+            export-type: debug
+            export-args: --install-android-build-template
+            export-folder: build/android-quest
+            archive: Android-Quest
+          - name: 🤖 Android Pico
+            os: ubuntu-latest
+            platform: android
+            export-preset: Android Pico
+            export-type: debug
+            export-args: --install-android-build-template
+            export-folder: build/android-pico
+            archive: Android-Pico
+          - name: 🤖 Android Lynx
+            os: ubuntu-latest
+            platform: android
+            export-preset: Android Lynx
+            export-type: debug
+            export-args: --install-android-build-template
+            export-folder: build/android-lynx
+            archive: Android-Lynx
+          - name: 🤖 Android Khronos
+            os: ubuntu-latest
+            platform: android
+            export-preset: Android Khronos
+            export-type: debug
+            export-args: --install-android-build-template
+            export-folder: build/android-khronos
+            archive: Android-Khronos
+          - name: 🌐 WebXR
+            os: ubuntu-latest
+            platform: web
+            export-preset: WebXR
+            export-type: release
+            export-folder: build/webxr
+            archive: WebXR
+
+    steps:
+      - name: 📚 Git checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          submodules: recursive
+          clean: true
+          persist-credentials: false
+          set-safe-directory: true
+      - name: 🧩 Install OpenXR Vendors Plugin
+        shell: bash
+        run: |
+          curl -L -O https://github.com/GodotVR/godot_openxr_vendors/releases/download/${{ env.OPENXR_VENDORS_VERSION }}/godotopenxrvendorsaddon.zip
+          unzip -o godotopenxrvendorsaddon.zip -d godotopenxrvendorsaddon
+          mkdir -p addons
+          mv godotopenxrvendorsaddon/asset/addons/godotopenxrvendors addons/godotopenxrvendors
+          rm godotopenxrvendorsaddon.zip
+          rm -rf godotopenxrvendorsaddon
+      - name: ☕ Set up Java
+        if: ${{ matrix.platform == 'android' }}
+        uses: actions/setup-java@3a4f6e1af504cf6a31855fa899c6aa5355ba6c12 # v4.7.0
+        with:
+          java-version: "17"
+          distribution: "temurin"
+      - name: 🤖 Set up Android SDK
+        if: ${{ matrix.platform == 'android' }}
+        uses: android-actions/setup-android@9fc6c4e9069bf8d3d10b2204b1fb8f6ef7065407 # v3.2.2
+      - name: 🤖 Install Android SDK Packages
+        if: ${{ matrix.platform == 'android' }}
+        run: >
+          sdkmanager
+          "platform-tools"
+          "build-tools;34.0.0"
+          "platforms;android-34"
+          "cmdline-tools;latest"
+          "cmake;3.10.2.4988404"
+          "ndk;23.2.8568313"
+      - name: 🤖 Set up Godot
+        uses: chickensoft-games/setup-godot@46198e5e97e81c09d8001962fdf4ed8c215bcb50 # v2.1.1
+        with:
+          version: ${{ env.GODOT_VERSION }}
+          use-dotnet: false
+          include-templates: true
+      - name: 🔌 Import Godot Project
+        run: godot --headless --verbose --import
+      - name: 🔧 Export Godot Project
+        run: godot --headless ${{ matrix.export-args }} --export-${{ matrix.export-type }} "${{ matrix.export-preset }}"
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: ${{ matrix.archive }}-Artifacts
+          path: |
+            ${{ matrix.export-folder }}/*.*
+            !**/.gitignore
+      - name: ⚙️ Compress Project
+        if: ${{ github.event_name == 'push' && github.ref_type == 'tag' }}
+        run: |
+          cd ${{ matrix.export-folder }}
+          7z a -tzip ${{ matrix.archive }}.zip *.* -x'!.gitignore'
+      - name: ⚙️ Publish Release
+        uses: ncipollo/release-action@440c8c1cb0ed28b9f43e4d1d670870f059653174 # v1
+        if: ${{ github.event_name == 'push' && github.ref_type == 'tag' }}
+        with:
+          allowUpdates: true
+          artifacts: "${{ matrix.export-folder }}/${{ matrix.archive }}.zip"
+          omitNameDuringUpdate: true
+          omitBodyDuringUpdate: true
+          token: ${{ secrets.GITHUB_TOKEN }}

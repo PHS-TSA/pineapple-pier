@@ -1,7 +1,8 @@
 extends CenterContainer
 
+var save_list: Array
+
 @onready var save_list_node = $LoadGame/SaveList
-var save_list : Array
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
