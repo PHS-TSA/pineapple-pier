@@ -134,6 +134,8 @@ jobs:
           version: ${{ env.GODOT_VERSION }}
           use-dotnet: false
           include-templates: true
+      - name: 🔌 Create build directory
+        run: mkdir -p ${{ matrix.export-folder }}
       - name: 🔧 Export Godot Project
         run: godot --headless ${{ matrix.export-args }} --export-${{ matrix.export-type }} "${{ matrix.export-preset }}"
       - name: Upload Artifacts
