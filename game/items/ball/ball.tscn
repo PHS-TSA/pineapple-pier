@@ -29,6 +29,7 @@ closed_pose = ExtResource("7_v2jw6")
 [node name="Ball" groups=["fits_in_pocket", "fits_in_storage"] instance=ExtResource("1_bolq3")]
 item_id = "rock_"
 item_type = ExtResource("2_rk8bt")
+picked_up_layer = 65537
 ranged_grab_method = 2
 second_hand_grab = 2
 
